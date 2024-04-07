@@ -1,21 +1,58 @@
-import { Controller,Ip, Get, Inject,Session, Query, SetMetadata, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller,Ip, Get,Req,Res,Next, Inject,Session, Query, SetMetadata, UseFilters, UseGuards, UseInterceptors, Redirect } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginGuard } from './login.guard';
 import { TimeInterceptor } from './time.interceptor';
 import { ValidatePipe } from './validate.pipe';
 import { TestFilter } from './test.filter';
+import { NextFunction, Request,Response } from 'express';
+import { AaaFilter } from './aaa.filter';
+import { AaaException } from './AaaExeption';
+import { Roles, Role } from './roles.decorator';
+
+// @Controller({host:':host.0.0.1',path:'bb'})
+// @SetMetadata('roles',['user'])
 @Controller()
-@SetMetadata('roles',['user'])
+@UseGuards(LoginGuard)
 export class AppController {
   constructor(private readonly appService: AppService) { }
   // 属性注入
   // @Inject(AppService)
   // private appService: AppService;
+  
 
   @Get()
+  @UseFilters(AaaFilter)
   getHello(): string {
     console.log('请求了接口-----');
+    throw new AaaException('aaa','bbb')
     return this.appService.getHello();
+  }
+
+  @Get('bb')
+  ee(@Req() req:Request) {
+    console.log(req.hostname,'===', req.url);
+  }
+
+  @Get('dd')
+  ff(@Res() res:Response) {
+    res.end('我是ffff')
+  }
+  @Get('gg')
+  gg(@Next() next:NextFunction) {
+    console.log('GG');
+    next()
+    return '1111'
+  }
+  @Get('gg')
+  gg2() {
+    console.log('GG2');
+    return '1111'
+  }
+  @Get('kk')
+  @Redirect('https://kandev.cn')
+  kk() {
+    console.log('GG2');
+    return '1111'
   }
 
   @Get('/ip')
@@ -32,13 +69,13 @@ export class AppController {
   }
 
   @Get('aa')
-  @UseGuards(LoginGuard)
-  @SetMetadata('roles',['admin'])
+  @Roles(Role.Admin,Role.User)
   aa(): string {
     console.log('aa');
     return 'aa'
   }
   @Get('cc')
+  @Roles(Role.Admin,Role.User)
   @UseInterceptors(TimeInterceptor)
   bb(): string {
     console.log('bb');
