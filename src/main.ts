@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { NestExpressApplication} from '@nestjs/platform-express';
 import { NextFunction, Request, Response} from 'express';
 import * as session from 'express-session';
+import { MyLogger } from './Mylogger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -13,6 +14,7 @@ async function bootstrap() {
   //   next()
   //   console.log('end');
   // })
+  app.useLogger(new MyLogger)
   app.use(session({
     secret:'kang',
     cookie:{

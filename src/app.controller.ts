@@ -1,4 +1,4 @@
-import { Controller,Ip, Get,Req,Res,Next, Inject,Session, Query, SetMetadata, UseFilters, UseGuards, UseInterceptors, Redirect } from '@nestjs/common';
+import { Controller,Ip, Get,Req,Res,Next,Logger, Inject,Session, Query, SetMetadata, UseFilters, UseGuards, UseInterceptors, Redirect } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginGuard } from './login.guard';
 import { TimeInterceptor } from './time.interceptor';
@@ -14,6 +14,7 @@ import { Roles, Role } from './roles.decorator';
 @Controller()
 @UseGuards(LoginGuard)
 export class AppController {
+  private logger = new Logger()
   constructor(private readonly appService: AppService) { }
   // 属性注入
   // @Inject(AppService)
@@ -25,7 +26,17 @@ export class AppController {
   getHello(): string {
     console.log('请求了接口-----');
     throw new AaaException('aaa','bbb')
-    return this.appService.getHello();
+    // return this.appService.getHello();
+  }
+
+  @Get('log')
+  log():string {
+    this.logger.debug('aaa', AppController.name);
+    this.logger.error('bbb', AppController.name);
+    this.logger.log('ccc', AppController.name);
+    this.logger.verbose('ddd', AppController.name);
+    this.logger.warn('eee', AppController.name);
+    return this.appService.getHello()
   }
 
   @Get('bb')
