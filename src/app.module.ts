@@ -8,8 +8,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
+import { JwtModule } from '@nestjs/jwt';
+import { HttpModule } from '@nestjs/axios';
 @Module({
-  imports: [UserModule, TypeOrmModule.forRoot({
+  imports: [HttpModule,UserModule, TypeOrmModule.forRoot({
     type:'mysql',
     host: 'localhost',
     port: 3306,
@@ -24,7 +26,19 @@ import { UserModule } from './user/user.module';
     extra:{
       authPlugin: 'sha256_password',
     }
-  })],
+  }),
+  JwtModule.registerAsync({
+    async useFactory() {
+      await 111;
+      return {
+        secret: 'kang',
+        signOptions: {
+          expiresIn: '7d'
+        }
+      }
+    }
+  })
+],
   controllers: [AppController],
   providers: [
     AppService,

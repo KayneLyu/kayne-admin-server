@@ -1,13 +1,33 @@
-import { Controller,Ip, Get,Req,Res,Next,Logger, Inject,Session, Query, SetMetadata, UseFilters, UseGuards, UseInterceptors, Redirect } from '@nestjs/common';
+import {
+  Controller,
+  Ip,
+  Get,
+  Req,
+  Res,
+  Next,
+  Logger,
+  Inject,
+  Session,
+  Query,
+  SetMetadata,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
+  Redirect,
+  UnauthorizedException,
+  Headers,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginGuard } from './login.guard';
 import { TimeInterceptor } from './time.interceptor';
 import { ValidatePipe } from './validate.pipe';
 import { TestFilter } from './test.filter';
-import { NextFunction, Request,Response } from 'express';
+import { NextFunction, Request, Response, response } from 'express';
 import { AaaFilter } from './aaa.filter';
 import { AaaException } from './AaaExeption';
 import { Roles, Role } from './roles.decorator';
+import { JwtService } from '@nestjs/jwt';
+import { HttpService } from '@nestjs/axios';
 
 // @Controller({host:':host.0.0.1',path:'bb'})
 // @SetMetadata('roles',['user'])
@@ -19,18 +39,70 @@ export class AppController {
   // 属性注入
   // @Inject(AppService)
   // private appService: AppService;
-  
+
+  @Inject(JwtService)
+  private readonly jwtService: JwtService;
+
+  @Inject(HttpService)
+  private readonly httpService: HttpService;
 
   @Get()
   @UseFilters(AaaFilter)
   getHello(): string {
     console.log('请求了接口-----');
-    throw new AaaException('aaa','bbb')
+    throw new AaaException('aaa', 'bbb')
     // return this.appService.getHello();
   }
 
+
+  @Get('weather')
+  async weather():Promise<any> {
+    try {
+      const data = await this.httpService.get('https://restapi.amap.com/v3/weather/weatherInfo',{
+        params:{
+          key: '9d2f7ea76160447a2b1b5bcf93750310',
+          city: '441900'
+        }
+      }).pipe(map())
+      
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
+
+  // @Get('kkk')
+  // kkk(@Session() session) {
+  //   session.count = session.count ? session.count + 1 : 1
+  //   return session.count
+  // }
+
+  @Get('ttt')
+  fff(@Headers('authorization') authorization: string, @Res({ passthrough: true }) response: Response) {
+    if (authorization) {
+      try {
+        const token = authorization.split(' ')[1];
+        const data = this.jwtService.verify(token);
+        const newToken = this.jwtService.sign({
+          count: data.count + 1,
+        })
+        response.setHeader('token', newToken)
+        return data.count + 1
+      } catch (error) {
+        console.log(error);
+        throw new UnauthorizedException();
+      }
+    } else {
+      const newToken = this.jwtService.sign({
+        count: 1
+      });
+      response.setHeader('token', newToken);
+      return 1;
+    }
+  }
+
   @Get('log')
-  log():string {
+  log(): string {
     this.logger.debug('aaa', AppController.name);
     this.logger.error('bbb', AppController.name);
     this.logger.log('ccc', AppController.name);
@@ -40,16 +112,16 @@ export class AppController {
   }
 
   @Get('bb')
-  ee(@Req() req:Request) {
-    console.log(req.hostname,'===', req.url);
+  ee(@Req() req: Request) {
+    console.log(req.hostname, '===', req.url);
   }
 
   @Get('dd')
-  ff(@Res() res:Response) {
+  ff(@Res() res: Response) {
     res.end('我是ffff')
   }
   @Get('gg')
-  gg(@Next() next:NextFunction) {
+  gg(@Next() next: NextFunction) {
     console.log('GG');
     next()
     return '1111'
@@ -67,12 +139,12 @@ export class AppController {
   }
 
   @Get('/ip')
-  ip(@Ip() ip:string) {
+  ip(@Ip() ip: string) {
     console.log(ip);
   }
   @Get('/session')
   session(@Session() session) {
-    if(!session.count) {
+    if (!session.count) {
       session.count = 0
     }
     session.count = session.count + 1
@@ -80,13 +152,13 @@ export class AppController {
   }
 
   @Get('aa')
-  @Roles(Role.Admin,Role.User)
+  @Roles(Role.Admin, Role.User)
   aa(): string {
     console.log('aa');
     return 'aa'
   }
   @Get('cc')
-  @Roles(Role.Admin,Role.User)
+  @Roles(Role.Admin, Role.User)
   @UseInterceptors(TimeInterceptor)
   bb(): string {
     console.log('bb');
