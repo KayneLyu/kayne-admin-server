@@ -5,8 +5,10 @@ export class TestFilter implements ExceptionFilter {
   catch(exception: BadRequestException, host: ArgumentsHost) {
     const response:Response = host.switchToHttp().getResponse()
     response.status(400).json({
-      statusCode: 400,
-      message: 'test error' + exception.message,
+      status: 400,
+      success:false,
+      message: exception.message,
+      data:{}
     })
   }
 }

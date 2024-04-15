@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginGuard } from './login.guard';
-import { TimeInterceptor } from './time.interceptor';
+import { TimeInterceptor, ResponseInterceptor } from './time.interceptor';
 import { ValidatePipe } from './validate.pipe';
 import { TestFilter } from './test.filter';
 import { NextFunction, Request, Response, response } from 'express';
@@ -27,11 +27,12 @@ import { AaaFilter } from './aaa.filter';
 import { AaaException } from './AaaExeption';
 import { Roles, Role } from './roles.decorator';
 import { JwtService } from '@nestjs/jwt';
-import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
 
 // @Controller({host:':host.0.0.1',path:'bb'})
 // @SetMetadata('roles',['user'])
 @Controller()
+@UseInterceptors(ResponseInterceptor)
 @UseGuards(LoginGuard)
 export class AppController {
   private logger = new Logger()
@@ -43,9 +44,6 @@ export class AppController {
   @Inject(JwtService)
   private readonly jwtService: JwtService;
 
-  @Inject(HttpService)
-  private readonly httpService: HttpService;
-
   @Get()
   @UseFilters(AaaFilter)
   getHello(): string {
@@ -56,19 +54,9 @@ export class AppController {
 
 
   @Get('weather')
-  async weather():Promise<any> {
-    try {
-      const data = await this.httpService.get('https://restapi.amap.com/v3/weather/weatherInfo',{
-        params:{
-          key: '9d2f7ea76160447a2b1b5bcf93750310',
-          city: '441900'
-        }
-      }).pipe(map())
-      
-    } catch (error) {
-      console.log(error);
-      
-    }
+  @UseFilters(TestFilter)
+  async weather() {
+    return this.appService.getWeather()
   }
 
   // @Get('kkk')
@@ -108,7 +96,7 @@ export class AppController {
     this.logger.log('ccc', AppController.name);
     this.logger.verbose('ddd', AppController.name);
     this.logger.warn('eee', AppController.name);
-    return this.appService.getHello()
+    return this.appService.readService()
   }
 
   @Get('bb')

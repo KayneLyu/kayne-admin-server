@@ -29,6 +29,9 @@ dependencies:
   '@types/express-session':
     specifier: ^1.18.0
     version: 1.18.0
+  axios:
+    specifier: ^1.6.8
+    version: 1.6.8
   express-session:
     specifier: ^1.18.0
     version: 1.18.0
