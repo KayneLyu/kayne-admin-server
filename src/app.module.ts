@@ -10,9 +10,10 @@ import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
+import { CacheModule } from '@nestjs/cache-manager';
 @Module({
-  imports: [HttpModule,UserModule, TypeOrmModule.forRoot({
-    type:'mysql',
+  imports: [HttpModule, UserModule, TypeOrmModule.forRoot({
+    type: 'mysql',
     host: 'localhost',
     port: 3306,
     username: 'root',
@@ -23,22 +24,23 @@ import { HttpModule } from '@nestjs/axios';
     poolSize: 10,
     connectorPackage: 'mysql2',
     synchronize: true,
-    extra:{
+    extra: {
       authPlugin: 'sha256_password',
     }
   }),
-  JwtModule.registerAsync({
-    async useFactory() {
-      await 111;
-      return {
-        secret: 'kang',
-        signOptions: {
-          expiresIn: '7d'
+    JwtModule.registerAsync({
+      async useFactory() {
+        await 111;
+        return {
+          secret: 'kang',
+          signOptions: {
+            expiresIn: '7d'
+          }
         }
       }
-    }
-  })
-],
+    }),
+    CacheModule.register()
+  ],
   controllers: [AppController],
   providers: [
     AppService,

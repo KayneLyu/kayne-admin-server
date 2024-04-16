@@ -55,10 +55,15 @@ export class AppController {
 
   @Get('weather')
   @UseFilters(TestFilter)
-  async weather() {
+  weather() {
     return this.appService.getWeather()
   }
 
+  @Get('sentence')
+  @UseFilters(TestFilter)
+  sentence() {
+    return this.appService.getSentence()
+  }
   // @Get('kkk')
   // kkk(@Session() session) {
   //   session.count = session.count ? session.count + 1 : 1
