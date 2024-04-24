@@ -27,7 +27,7 @@ import { AaaFilter } from './aaa.filter';
 import { AaaException } from './AaaExeption';
 import { Roles, Role } from './roles.decorator';
 import { JwtService } from '@nestjs/jwt';
-import { lastValueFrom } from 'rxjs';
+
 
 // @Controller({host:':host.0.0.1',path:'bb'})
 // @SetMetadata('roles',['user'])
@@ -64,11 +64,6 @@ export class AppController {
   sentence() {
     return this.appService.getSentence()
   }
-  // @Get('kkk')
-  // kkk(@Session() session) {
-  //   session.count = session.count ? session.count + 1 : 1
-  //   return session.count
-  // }
 
   @Get('ttt')
   fff(@Headers('authorization') authorization: string, @Res({ passthrough: true }) response: Response) {
